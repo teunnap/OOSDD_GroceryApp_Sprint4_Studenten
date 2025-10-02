@@ -8,6 +8,12 @@ Vereist aanvulling:
 - Werk in GroceryListItemsService de methode GetBestSellingProducts uit.  
 - In BestSellingProductsView de kop van de tabel aanvullen met de gewenste kopregel boven de tabel. Daarnaast de inhoud van de tabel uitwerken.
 
+Architectuurkeuzes (SRP)
+- Repositories (`GroceryListItemsRepository`, `ProductRepository`) leveren ruwe data zonder domeinlogica.
+- Service (`GroceryListItemsService`) aggregeert verkoopaantallen, bepaalt sortering en rang (dense ranking). Dit is businesslogica en hoort niet in repository of UI.
+- ViewModel (`BestSellingProductsViewModel`) orkestreert en expose’t een read-model `BestSellingProducts` voor de view.
+- View (`BestSellingProductsView.xaml`) presenteert een tabel met kolommen: Rank, Product, Verkocht, Voorraad.
+
 ## UC13 Klanten tonen per product  
 Deze UC toont de klanten die een bepaald product hebben gekocht:  
 - Maak enum Role met als waarden None en Admin.  
