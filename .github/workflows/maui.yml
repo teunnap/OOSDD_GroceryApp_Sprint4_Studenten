@@ -2,39 +2,40 @@ name: MAUI Workflow
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - release/**
-      - feature/**
+    branches: [ "**" ]
   pull_request:
-    branches:
-      - main
-      - develop
-      - release/**
-      - feature/**
+    branches: [ "**" ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-      - name: Haal de repository op
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Installeer .NET SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-      - name: Installeer MAUI workloads
-        run: dotnet workload install maui-android
-
-      - name: Herstel afhankelijkheden
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Restore
         run: dotnet restore
 
-      - name: Bouw de applicatie
-        run: dotnet build --configuration Release --no-restore
+      - name: Build tests (Release)
+        run: dotnet build TestCore/TestCore.csproj --configuration Release --no-restore
 
-      - name: Voer unit tests uit
-        run: dotnet test --configuration Release --no-restore --no-build --verbosity normal
+      - name: Run unit tests
+        run: dotnet test TestCore/TestCore.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
+      - name: Build core projects (Release)
+        run: |
+          dotnet build Grocery.Core/Grocery.Core.csproj --configuration Release --no-restore
+          dotnet build Grocery.Core.Data/Grocery.Core.Data.csproj --configuration Release --no-restore
